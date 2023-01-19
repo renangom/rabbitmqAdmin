@@ -45,6 +45,53 @@ appDataSource.initialize().then(
             return res.json(savedProduct);
         })
 
+        app.get('/api/products/:id', async (req,res) => {
+            const {id} = req.params;
+
+            const product = await repository.findOne({where: {id}});
+
+            if(!product){
+                return res.status(400).json("Product not found");
+            }
+
+            return res.json(product);
+        })
+
+        app.put('/api/products/:id', async (req,res) => {
+            const {id} = req.params;
+            const {title, image} = req.body;
+            const product = await repository.findOne({where: {id}});
+
+            if(product){
+                product.title = title;
+                product.image = image;
+
+                await repository.save(product);
+                return res.json(product)
+            }
+
+        })
+
+        app.delete('/api/products/:id', async (req,res) => {
+            const {id} = req.params;
+
+            const product = await repository.findOne({where: {id}});
+
+            if(product) {
+                await repository.delete(product);
+                return res.json('product deleted')
+            }
+        })
+
+        app.post('/api/products/:id/like', async (req, res) => {
+            const product = await repository.findOne({where: {id: req.params.id}});
+            if(product){
+                product.likes += 1;
+                const result = await repository.save(product);
+                return res.json(result);
+            }
+        })
+
         app.listen(8080, () => {
             console.log("Server is running on port 8080")
         })
